@@ -1,17 +1,18 @@
-import React from "react";
+import React, { useEffect } from "react";
 import axios from "axios";
-import { Container, Icon } from "semantic-ui-react";
+import { Card, Container, Header, Icon } from "semantic-ui-react";
 import { useParams } from "react-router-dom";
 import { apiBaseUrl } from "../constants";
-import { Patient } from "../types";
+import { Entry, Patient } from "../types";
 import { useStateValue, addSensitivePatient } from "../state";
+import EntryDetails from "./EntryDetails";
 
 const PatientListPage: React.FC = () => {
   const [{ sensitivePatients }, dispatch] = useStateValue();
   const { id } = useParams<{ id: string }>();
   const patient = Object.values(sensitivePatients).find((a: Patient) => a.id === id);
-  React.useEffect(() => {
-    if (!patient || !patient.ssn) {
+  useEffect(() => {
+    if (!patient) {
       const fetchPatient = async () => {
         try {
           const { data: patientFromApi } = await axios.get<Patient>(
@@ -31,11 +32,17 @@ const PatientListPage: React.FC = () => {
       <Container textAlign="left">
         {patient ?
           <div>
-            <h1>{patient.name} {patient.gender === "male" ? <Icon name="mars" /> : patient.gender === "female" ? <Icon name="venus" /> : <Icon name="venus mars" />}</h1>
+            <Header as="h1">{patient.name} {patient.gender === "male" ? <Icon name="mars" /> : patient.gender === "female" ? <Icon name="venus" /> : <Icon name="venus mars" />}</Header>
             <div>ssn: {patient.ssn}</div>
             <div>occupation: {patient.occupation}</div>
+            <Header as="h3">entries</Header>
+            <Card.Group>
+              {patient.entries.map((entry: Entry) => (
+                <EntryDetails key={entry.id} entry={entry} />
+              ))}
+            </Card.Group>
           </div>
-          : <h1>patient not found</h1>}
+          : <Header>patient not found</Header>}
       </Container>
 
     </div>
