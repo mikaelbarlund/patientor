@@ -15,6 +15,10 @@ export type Action =
     payload: Patient;
   }
   | {
+    type: "ADD_ENTRY";
+    payload: Patient;
+  }
+  | {
     type: "SET_DIAGNOSIS_LIST";
     payload: Diagnosis[];
   }
@@ -49,17 +53,17 @@ export const reducer = (state: State, action: Action): State => {
           [action.payload.id]: action.payload
         }
       };
-      case "SET_DIAGNOSIS_LIST":
-        return {
-          ...state,
-          diagnosis: {
-            ...action.payload.reduce(
-              (memo, diagnose) => ({ ...memo, [diagnose.code]: diagnose }),
-              {}
-            ),
-            ...state.diagnosis
-          }
-        };
+    case "SET_DIAGNOSIS_LIST":
+      return {
+        ...state,
+        diagnosis: {
+          ...action.payload.reduce(
+            (memo, diagnose) => ({ ...memo, [diagnose.code]: diagnose }),
+            {}
+          ),
+          ...state.diagnosis
+        }
+      };
     default:
       return state;
   }
@@ -76,7 +80,6 @@ export const addSensitivePatient = (patientFromApi: Patient): Action => {
 export const addPatient = (newPatient: Patient): Action => {
   return { type: "ADD_PATIENT", payload: newPatient };
 };
-
 export const setDiagnosisList = (diagnosisListFromApi: Diagnosis[]): Action => {
   return { type: "SET_DIAGNOSIS_LIST", payload: diagnosisListFromApi };
 };

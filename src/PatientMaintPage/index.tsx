@@ -1,16 +1,41 @@
 import React, { useEffect } from "react";
 import axios from "axios";
-import { Card, Container, Header, Icon } from "semantic-ui-react";
+import { Card, Container, Header, Icon, Button } from "semantic-ui-react";
 import { useParams } from "react-router-dom";
 import { apiBaseUrl } from "../constants";
 import { Entry, Patient } from "../types";
 import { useStateValue, addSensitivePatient } from "../state";
 import EntryDetails from "./EntryDetails";
+import AddEntryModal from "./AddEntryModal";
+import { EntryFormValues } from "./AddEntryModal/AddEntryForm";
 
 const PatientListPage: React.FC = () => {
   const [{ sensitivePatients }, dispatch] = useStateValue();
+  const [modalOpen, setModalOpen] = React.useState<boolean>(false);
   const { id } = useParams<{ id: string }>();
   const patient = Object.values(sensitivePatients).find((a: Patient) => a.id === id);
+
+  const openModal = (): void => setModalOpen(true);
+
+  const closeModal = (): void => {
+    setModalOpen(false);
+  };
+  const submitNewEntryForm = async (values: EntryFormValues) => {
+    try {
+      console.log(values);
+      const { data: newPatient } = await axios.post<Patient>(
+        `${apiBaseUrl}/patients/${id}/entries`,
+        values
+      );
+      console.log(newPatient);
+      dispatch(addSensitivePatient(newPatient));
+      closeModal();
+    } catch (e) {
+      console.error(e.response.data);
+    }
+  };
+
+
   useEffect(() => {
     if (!patient) {
       const fetchPatient = async () => {
@@ -44,7 +69,12 @@ const PatientListPage: React.FC = () => {
           </div>
           : <Header>patient not found</Header>}
       </Container>
-
+      <AddEntryModal
+        modalOpen={modalOpen}
+        onSubmit={submitNewEntryForm}
+        onClose={closeModal}
+      />
+      <Button onClick={() => openModal()}>Add New Entry</Button>
     </div>
   );
 };
